@@ -1,21 +1,42 @@
 import type { IOptions } from "@/types";
 
-export const serviceTypes = {
-  APARTMENT: "Apartment",
-  TOWNHOUSE: "Townhouse",
-  HOUSE: "House",
+export const GENERAL_HOUSE_CLEAN_SERVICE_TYPES = {
+  APARTMENT: "APARTMENT",
+  TOWNHOUSE: "TOWNHOUSE",
+  HOUSE: "HOUSE",
 };
 
-export const serviceCategories: IOptions[] = [
-  { value: "General House Clean", label: "General House Clean" },
-  { value: "End of Lease Clean", label: "End of Lease Clean" },
-  { value: "Carpet Steam Clean", label: "Carpet Steam Clean" },
+export const END_OF_LEASE_SERVICE_TYPES = {
+  APARTMENT: "APARTMENT",
+  HOUSE_OR_TOWNHOUSE: "HOUSE_OR_TOWNHOUSE",
+};
+
+export const SERVICE_CATEGORIES = {
+  GENERAL_HOUSE_CLEAN: "GENERAL_HOUSE_CLEAN",
+  END_OF_LEASE_CLEAN: "END_OF_LEASE_CLEAN",
+  CARPET_STEAM_CLEAN: "CARPET_STEAM_CLEAN",
+};
+
+export const serviceCategoryOptions: IOptions[] = [
+  {
+    value: SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN,
+    label: "General House Clean",
+  },
+  { value: SERVICE_CATEGORIES.END_OF_LEASE_CLEAN, label: "End of Lease Clean" },
 ];
 
-export const typesOfServices: IOptions[] = [
-  { value: serviceTypes.APARTMENT, label: "Apartment" },
-  { value: serviceTypes.TOWNHOUSE, label: "Townhouse" },
-  { value: serviceTypes.HOUSE, label: "House" },
+export const houseCleanServiceTypesOptions: IOptions[] = [
+  { value: GENERAL_HOUSE_CLEAN_SERVICE_TYPES.APARTMENT, label: "Apartment" },
+  { value: GENERAL_HOUSE_CLEAN_SERVICE_TYPES.TOWNHOUSE, label: "Townhouse" },
+  { value: GENERAL_HOUSE_CLEAN_SERVICE_TYPES.HOUSE, label: "House" },
+];
+
+export const endOfLeaseCleanServiceTypesOptions: IOptions[] = [
+  { value: END_OF_LEASE_SERVICE_TYPES.APARTMENT, label: "Apartment" },
+  {
+    value: END_OF_LEASE_SERVICE_TYPES.HOUSE_OR_TOWNHOUSE,
+    label: "House / Townhouse",
+  },
 ];
 
 export const hearOptions: IOptions[] = [
@@ -47,3 +68,89 @@ export const getInsideOptions: IOptions[] = [
   { value: "Intercom", label: "Intercom (Please provide details below)" },
   { value: "Other", label: "Other" },
 ];
+
+export const bedRoomOptions: IOptions[] = [
+  { value: 1, label: "1 Bedroom" },
+  { value: 2, label: "2 Bedrooms" },
+  {
+    value: 3,
+    label: "3 Bedrooms",
+  },
+  { value: 4, label: "4 Bedrooms" },
+  { value: 5, label: "5 Bedrooms" },
+  { value: 6, label: "6 Bedrooms" },
+];
+
+export const bathRoomOptions: IOptions[] = [
+  { value: 1, label: "1 Bathroom" },
+  { value: 2, label: "2 Bathrooms" },
+  {
+    value: 3,
+    label: "3 Bathrooms",
+  },
+  { value: 4, label: "4 Bathrooms" },
+  { value: 5, label: "5 Bathrooms" },
+  { value: 6, label: "6 Bathrooms" },
+];
+
+export const powderRoomOptions: IOptions[] = [
+  { value: 0, label: "No Powder Rooms" },
+  { value: 1, label: "1 Powder Room" },
+  { value: 2, label: "2 Powder Rooms" },
+  {
+    value: 3,
+    label: "3 Powder Rooms",
+  },
+  { value: 4, label: "4 Powder Rooms" },
+  { value: 5, label: "5 Powder Rooms" },
+  { value: 6, label: "6 Powder Rooms" },
+];
+
+export const GENERAL_HOUSE_CLEAN_PRICES = {
+  APARTMENT: {
+    BASE_PRICE: 139,
+    EXTRA_BEDROOM_PRICE: 20,
+    EXTRA_BATHROOM_PRICE: 20,
+    POWDER_ROOM_PRICE: 5,
+  },
+  TOWNHOUSE: {
+    BASE_PRICE: 149,
+    EXTRA_BEDROOM_PRICE: 10,
+    EXTRA_BATHROOM_PRICE: 20,
+    POWDER_ROOM_PRICE: 5,
+    DOUBLE_STOREY_PRICE: 20,
+  },
+  HOUSE: {
+    BASE_PRICE: 154,
+    EXTRA_BEDROOM_PRICE: 10,
+    EXTRA_BATHROOM_PRICE: 20,
+    POWDER_ROOM_PRICE: 5,
+    DOUBLE_STOREY_PRICE: 20,
+  },
+};
+
+export const END_OF_LEASE_CLEAN_PRICES = {
+  APARTMENT: {
+    BEDROOMS: {
+      1: 340,
+      2: 395,
+      3: 450,
+      4: 500,
+      5: 550,
+    },
+    EXTRA_BATHROOM_PRICE: 25,
+    POWDER_ROOM_PRICE: 10,
+  },
+  HOUSE_OR_TOWNHOUSE: {
+    BEDROOMS: {
+      1: 339,
+      2: 409,
+      3: 475,
+      4: 600,
+      5: 850,
+    },
+    EXTRA_BATHROOM_PRICE: 25,
+    POWDER_ROOM_PRICE: 10,
+    DOUBLE_STOREY_PRICE: 50,
+  },
+};

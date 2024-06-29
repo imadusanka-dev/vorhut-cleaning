@@ -1,0 +1,18 @@
+export const createPriceSlice = (set) => ({
+  servicePrice: 0,
+  extraPrice: 0,
+  discount: 0,
+  amountBeforeTax: 0,
+  tax: 0,
+  finalAmount: 0,
+  tip: 0,
+  total: 0,
+  setServicePrice: (servicePrice) => set({ servicePrice }),
+  setExtraPrice: (extraPrice) => set({ extraPrice }),
+  setDiscount: (discount) => set({ discount }),
+  setAmountBeforeTax: (amountBeforeTax) => set({ amountBeforeTax }),
+  setTax: (tax) => set({ tax }),
+  setFinalAmount: (finalAmount) => set({ finalAmount }),
+  setTip: (tip) => set({ tip }),
+  setTotal: (total) => set({ total }),
+});
