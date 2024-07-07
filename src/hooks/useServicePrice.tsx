@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
-import {
-  END_OF_LEASE_CLEAN_PRICES,
-  END_OF_LEASE_SERVICE_TYPES,
-  GENERAL_HOUSE_CLEAN_PRICES,
-  GENERAL_HOUSE_CLEAN_SERVICE_TYPES,
-  SERVICE_CATEGORIES,
-} from "@/const";
+import type { ServicesPrices } from "@/schemas/servicesPrice";
 
 interface Props {
-  serviceCategory: string | undefined;
-  serviceType: string | undefined;
+  serviceCategory: number | undefined;
+  serviceType: number | undefined;
   noOfBedrooms: number | undefined;
   noOfBathrooms: number | undefined;
   noOfPowderRooms: number | undefined;
   noOfStoreys: string | undefined;
+  prices: ServicesPrices | undefined;
 }
 
 export const useServicePrice = ({
@@ -23,18 +18,24 @@ export const useServicePrice = ({
   noOfBathrooms,
   noOfPowderRooms,
   noOfStoreys,
+  prices,
 }: Props) => {
   const [servicePrice, setServicePrice] = useState<number>(0);
 
   useEffect(() => {
-    if (
-      serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN &&
-      serviceType
-    ) {
-      const serviceTypePrices = GENERAL_HOUSE_CLEAN_PRICES[serviceType];
+    if (serviceCategory === 1 && serviceType && prices) {
+      const serviceTypePrices = prices[serviceCategory][serviceType];
 
       if (serviceTypePrices) {
         let totalPrice = serviceTypePrices.BASE_PRICE;
+
+        if (noOfBedrooms > 1) {
+          const noOfExtraBedrooms = noOfBedrooms - 1;
+          const extraBedroomCost =
+            noOfExtraBedrooms * serviceTypePrices.EXTRA_BEDROOM_PRICE;
+
+          totalPrice += extraBedroomCost;
+        }
 
         if (noOfBathrooms > 1) {
           const noOfExtraBathrooms = noOfBathrooms - 1;
@@ -51,24 +52,18 @@ export const useServicePrice = ({
           totalPrice += powderRoomsCost;
         }
 
-        if (
-          serviceType === END_OF_LEASE_SERVICE_TYPES.HOUSE_OR_TOWNHOUSE &&
-          noOfStoreys > 1
-        ) {
+        if ((serviceType === 2 || serviceType === 3) && noOfStoreys > 1) {
           const extraStoreys = noOfStoreys - 1;
           const extraStoreyCost =
             extraStoreys * serviceTypePrices.DOUBLE_STOREY_PRICE;
 
           totalPrice += extraStoreyCost;
         }
-        console.log("-------total price", totalPrice);
+
         setServicePrice(totalPrice);
       }
-    } else if (
-      serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN &&
-      serviceType
-    ) {
-      const serviceTypePrices = END_OF_LEASE_CLEAN_PRICES[serviceType];
+    } else if (serviceCategory === 2 && serviceType && prices) {
+      const serviceTypePrices = prices[serviceCategory][serviceType];
 
       if (serviceTypePrices && noOfBathrooms && noOfBedrooms) {
         //bedroom price with 1 bathroom
@@ -89,17 +84,13 @@ export const useServicePrice = ({
           totalPrice += powderRoomsCost;
         }
 
-        if (
-          serviceType === END_OF_LEASE_SERVICE_TYPES.HOUSE_OR_TOWNHOUSE &&
-          noOfStoreys > 1
-        ) {
+        if (serviceType === 5 && noOfStoreys > 1) {
           const extraStoreys = noOfStoreys - 1;
           const extraStoreyCost =
             extraStoreys * serviceTypePrices.DOUBLE_STOREY_PRICE;
 
           totalPrice += extraStoreyCost;
         }
-        console.log("-------service price end", totalPrice);
         setServicePrice(totalPrice);
       }
     }
@@ -110,6 +101,7 @@ export const useServicePrice = ({
     noOfBedrooms,
     noOfBathrooms,
     noOfPowderRooms,
+    prices,
   ]);
 
   return {

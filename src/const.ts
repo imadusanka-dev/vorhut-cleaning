@@ -154,3 +154,5 @@ export const END_OF_LEASE_CLEAN_PRICES = {
     DOUBLE_STOREY_PRICE: 50,
   },
 };
+
+export const storeysEnabledServiceTypes = [2, 3, 5];

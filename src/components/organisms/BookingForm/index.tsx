@@ -16,6 +16,7 @@ import {
   bedRoomOptions,
   bathRoomOptions,
   powderRoomOptions,
+  storeysEnabledServiceTypes,
 } from "@/const";
 import {
   Form,
@@ -27,8 +28,19 @@ import {
   Radio,
   Space,
 } from "antd";
-import { HouseCleanCheckBoxes, EndOfLeaseCheckBoxes } from "@/components";
+import {
+  HouseCleanCheckBoxes,
+  EndOfLeaseCheckBoxes,
+  PlacesAutoComplete,
+} from "@/components";
 import { usePriceManager } from "@/hooks";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getCategories,
+  getServiceTypes,
+  getServicesPrices,
+} from "@/api/services";
+import { formatSelectOptionArray } from "@/utils/formatSelectOptions";
 
 export const BookingForm = ({ submitButtonRef }) => {
   const [form] = Form.useForm();
@@ -59,30 +71,45 @@ export const BookingForm = ({ submitButtonRef }) => {
   );
   const wallScrubAndClean = Form.useWatch("wallScrubAndClean", form);
 
-  useEffect(() => {
-    if (serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN) {
-      form.setFieldValue("serviceType", houseCleanServiceTypesOptions[0].value);
-    } else if (serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN) {
-      form.setFieldValue(
-        "serviceType",
-        endOfLeaseCleanServiceTypesOptions[0].value,
-      );
-    }
-  }, [serviceCategory]);
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  const {
+    data: serviceTypes,
+    isLoading: isServiceTypesLoading,
+    isSuccess: isServiceTypesSuccess,
+  } = useQuery({
+    queryKey: ["serviceTypes", serviceCategory],
+    queryFn: () => getServiceTypes(serviceCategory),
+    enabled: !!serviceCategory,
+  });
+
+  const { data: prices } = useQuery({
+    queryKey: ["servicePrices"],
+    queryFn: getServicesPrices,
+  });
 
   useEffect(() => {
-    form.setFieldValue("bedrooms", bedRoomOptions[0].value);
-    form.setFieldValue("bathrooms", bathRoomOptions[0].value);
-    form.setFieldValue("powderRooms", powderRoomOptions[0].value);
-
-    if (
-      serviceType === GENERAL_HOUSE_CLEAN_SERVICE_TYPES.HOUSE ||
-      serviceType === GENERAL_HOUSE_CLEAN_SERVICE_TYPES.TOWNHOUSE ||
-      serviceType === END_OF_LEASE_SERVICE_TYPES.HOUSE_OR_TOWNHOUSE
-    ) {
-      form.setFieldValue("storeys", storeysOptions[0].value);
+    //set first service type as default value
+    if (isServiceTypesSuccess && serviceTypes) {
+      form.setFieldValue("serviceType", serviceTypes[0].id);
     }
-  }, [serviceType]);
+  }, [isServiceTypesSuccess, serviceTypes, form]);
+
+  useEffect(() => {
+    //reset fields when service type changed
+    if (serviceType) {
+      form.setFieldValue("bedrooms", bedRoomOptions[0].value);
+      form.setFieldValue("bathrooms", bathRoomOptions[0].value);
+      form.setFieldValue("powderRooms", powderRoomOptions[0].value);
+
+      if (storeysEnabledServiceTypes.includes(Number(serviceType))) {
+        form.setFieldValue("storeys", storeysOptions[0].value);
+      }
+    }
+  }, [serviceType, form]);
 
   usePriceManager({
     serviceType,
@@ -91,6 +118,7 @@ export const BookingForm = ({ submitButtonRef }) => {
     noOfBedrooms,
     noOfPowderRooms,
     noOfStoreys,
+    prices,
   });
 
   const onFinish = (values) => {
@@ -101,22 +129,11 @@ export const BookingForm = ({ submitButtonRef }) => {
     console.log("Failed:", errorInfo);
   };
 
-  const getServiceTypeOptions = () => {
-    if (serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN) {
-      return houseCleanServiceTypesOptions;
-    } else if (serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN) {
-      return endOfLeaseCleanServiceTypesOptions;
-    } else {
-      return [];
-    }
-  };
-
   return (
     <div>
       <Form
         form={form}
         name="form"
-        initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
@@ -180,7 +197,7 @@ export const BookingForm = ({ submitButtonRef }) => {
                 { required: true, message: "Please select service category" },
               ]}
             >
-              <Select options={serviceCategoryOptions} />
+              <Select options={formatSelectOptionArray(categories)} />
             </Form.Item>
           </div>
           <div className="w-1/2">
@@ -191,7 +208,7 @@ export const BookingForm = ({ submitButtonRef }) => {
                 { required: true, message: "Please select type of service" },
               ]}
             >
-              <Select options={getServiceTypeOptions()} />
+              <Select options={formatSelectOptionArray(serviceTypes)} />
             </Form.Item>
           </div>
         </div>
@@ -224,9 +241,7 @@ export const BookingForm = ({ submitButtonRef }) => {
           <Select options={powderRoomOptions} />
         </Form.Item>
 
-        {(serviceType === GENERAL_HOUSE_CLEAN_SERVICE_TYPES.HOUSE ||
-          serviceType === GENERAL_HOUSE_CLEAN_SERVICE_TYPES.TOWNHOUSE ||
-          serviceType === END_OF_LEASE_SERVICE_TYPES.HOUSE_OR_TOWNHOUSE) && (
+        {storeysEnabledServiceTypes.includes(Number(serviceType)) && (
           <Form.Item
             label="Storeys"
             name="storeys"
@@ -236,26 +251,26 @@ export const BookingForm = ({ submitButtonRef }) => {
           </Form.Item>
         )}
 
-        {serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN && (
-          <HouseCleanCheckBoxes
-            serviceType={serviceType}
-            blindsClean={blindsClean}
-            changeBedSheets={changeBedSheets}
-          />
-        )}
-        {serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN && (
-          <EndOfLeaseCheckBoxes
-            steamCleanBedrooms={steamCleanBedrooms}
-            steamCleanLivingrooms={steamCleanLivingrooms}
-            steamCleanHallways={steamCleanHallways}
-            steamCleanStairs={steamCleanStairs}
-            steamCleanSingleSeatSofa={steamCleanSingleSeatSofa}
-            steamCleanMultiSeatSofa={steamCleanMultiSeatSofa}
-            wallScrubAndClean={wallScrubAndClean}
-            blindsClean={blindsClean}
-            serviceType={serviceType}
-          />
-        )}
+        {/*{serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN && (*/}
+        {/*  <HouseCleanCheckBoxes*/}
+        {/*    serviceType={serviceType}*/}
+        {/*    blindsClean={blindsClean}*/}
+        {/*    changeBedSheets={changeBedSheets}*/}
+        {/*  />*/}
+        {/*)}*/}
+        {/*{serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN && (*/}
+        {/*  <EndOfLeaseCheckBoxes*/}
+        {/*    steamCleanBedrooms={steamCleanBedrooms}*/}
+        {/*    steamCleanLivingrooms={steamCleanLivingrooms}*/}
+        {/*    steamCleanHallways={steamCleanHallways}*/}
+        {/*    steamCleanStairs={steamCleanStairs}*/}
+        {/*    steamCleanSingleSeatSofa={steamCleanSingleSeatSofa}*/}
+        {/*    steamCleanMultiSeatSofa={steamCleanMultiSeatSofa}*/}
+        {/*    wallScrubAndClean={wallScrubAndClean}*/}
+        {/*    blindsClean={blindsClean}*/}
+        {/*    serviceType={serviceType}*/}
+        {/*  />*/}
+        {/*)}*/}
 
         <Form.Item
           label="Tip"
