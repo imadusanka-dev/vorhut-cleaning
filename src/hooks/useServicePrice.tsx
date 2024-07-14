@@ -23,76 +23,30 @@ export const useServicePrice = ({
   const [servicePrice, setServicePrice] = useState<number>(0);
 
   useEffect(() => {
-    if (serviceCategory === 1 && serviceType && prices) {
-      const serviceTypePrices = prices[serviceCategory][serviceType];
+    if (prices && serviceType) {
+      let totalPrice = prices.bedRoomPrices[noOfBedrooms];
 
-      if (serviceTypePrices) {
-        let totalPrice = serviceTypePrices.BASE_PRICE;
+      if (noOfBathrooms > 1) {
+        const noOfExtraBathrooms = noOfBathrooms - 1;
+        const extraBathroomCost =
+          noOfExtraBathrooms * prices.extraBathroomPrice;
 
-        if (noOfBedrooms > 1) {
-          const noOfExtraBedrooms = noOfBedrooms - 1;
-          const extraBedroomCost =
-            noOfExtraBedrooms * serviceTypePrices.EXTRA_BEDROOM_PRICE;
-
-          totalPrice += extraBedroomCost;
-        }
-
-        if (noOfBathrooms > 1) {
-          const noOfExtraBathrooms = noOfBathrooms - 1;
-          const extraBathroomCost =
-            noOfExtraBathrooms * serviceTypePrices.EXTRA_BATHROOM_PRICE;
-
-          totalPrice += extraBathroomCost;
-        }
-
-        if (noOfPowderRooms > 0) {
-          const powderRoomsCost =
-            noOfPowderRooms * serviceTypePrices.POWDER_ROOM_PRICE;
-
-          totalPrice += powderRoomsCost;
-        }
-
-        if ((serviceType === 2 || serviceType === 3) && noOfStoreys > 1) {
-          const extraStoreys = noOfStoreys - 1;
-          const extraStoreyCost =
-            extraStoreys * serviceTypePrices.DOUBLE_STOREY_PRICE;
-
-          totalPrice += extraStoreyCost;
-        }
-
-        setServicePrice(totalPrice);
+        totalPrice += extraBathroomCost;
       }
-    } else if (serviceCategory === 2 && serviceType && prices) {
-      const serviceTypePrices = prices[serviceCategory][serviceType];
 
-      if (serviceTypePrices && noOfBathrooms && noOfBedrooms) {
-        //bedroom price with 1 bathroom
-        let totalPrice = serviceTypePrices.BEDROOMS?.[noOfBedrooms];
+      if (noOfPowderRooms > 0) {
+        const powderRoomsCost = noOfPowderRooms * prices.powderRoomPrice;
 
-        if (noOfBathrooms > 1) {
-          const noOfExtraBathrooms = noOfBathrooms - 1;
-          const extraBathroomCost =
-            noOfExtraBathrooms * serviceTypePrices.EXTRA_BATHROOM_PRICE;
-
-          totalPrice += extraBathroomCost;
-        }
-
-        if (noOfPowderRooms > 0) {
-          const powderRoomsCost =
-            noOfPowderRooms * serviceTypePrices.POWDER_ROOM_PRICE;
-
-          totalPrice += powderRoomsCost;
-        }
-
-        if (serviceType === 5 && noOfStoreys > 1) {
-          const extraStoreys = noOfStoreys - 1;
-          const extraStoreyCost =
-            extraStoreys * serviceTypePrices.DOUBLE_STOREY_PRICE;
-
-          totalPrice += extraStoreyCost;
-        }
-        setServicePrice(totalPrice);
+        totalPrice += powderRoomsCost;
       }
+
+      if (prices.doubleStoryPrice && noOfStoreys > 1) {
+        const extraStoreys = noOfStoreys - 1;
+        const extraStoreyCost = extraStoreys * prices.doubleStoryPrice;
+
+        totalPrice += extraStoreyCost;
+      }
+      setServicePrice(totalPrice);
     }
   }, [
     serviceCategory,

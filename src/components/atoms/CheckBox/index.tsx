@@ -10,7 +10,12 @@ interface Props {
 export const CheckBox = ({ name, title, className }: Props) => {
   return (
     <div className={className}>
-      <Form.Item name={name} valuePropName="checked" className="mb-0">
+      <Form.Item
+        name={name}
+        preserve={false}
+        valuePropName="checked"
+        className="mb-0"
+      >
         <Checkbox>{title}</Checkbox>
       </Form.Item>
     </div>

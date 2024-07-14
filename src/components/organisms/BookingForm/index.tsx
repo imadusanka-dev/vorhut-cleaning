@@ -3,16 +3,10 @@
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import {
-  SERVICE_CATEGORIES,
-  GENERAL_HOUSE_CLEAN_SERVICE_TYPES,
-  houseCleanServiceTypesOptions,
-  END_OF_LEASE_SERVICE_TYPES,
-  endOfLeaseCleanServiceTypesOptions,
   hearOptions,
   storeysOptions,
   flexibilityOptions,
   getInsideOptions,
-  serviceCategoryOptions,
   bedRoomOptions,
   bathRoomOptions,
   powderRoomOptions,
@@ -24,23 +18,25 @@ import {
   Button,
   Select,
   DatePicker,
+  TimePicker,
   InputNumber,
   Radio,
   Space,
 } from "antd";
-import {
-  HouseCleanCheckBoxes,
-  EndOfLeaseCheckBoxes,
-  PlacesAutoComplete,
-} from "@/components";
+import { ExtraServices } from "@/components";
 import { usePriceManager } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import {
   getCategories,
   getServiceTypes,
+  getExtraServices,
   getServicesPrices,
 } from "@/api/services";
+import { isValidEmail } from "@/utils/isValidEmail";
+import { isValidPhoneNumber } from "@/utils/isValidPhoneNumber";
 import { formatSelectOptionArray } from "@/utils/formatSelectOptions";
+
+const disabledHours = [0, 1, 2, 3, 4, 5, 6, 7, 18, 19, 20, 21, 22, 23];
 
 export const BookingForm = ({ submitButtonRef }) => {
   const [form] = Form.useForm();
@@ -71,7 +67,11 @@ export const BookingForm = ({ submitButtonRef }) => {
   );
   const wallScrubAndClean = Form.useWatch("wallScrubAndClean", form);
 
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
+  const {
+    data: categories,
+    isLoading: isCategoriesLoading,
+    isSuccess: isCategoriesSuccess,
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
@@ -87,9 +87,26 @@ export const BookingForm = ({ submitButtonRef }) => {
   });
 
   const { data: prices } = useQuery({
-    queryKey: ["servicePrices"],
-    queryFn: getServicesPrices,
+    queryKey: ["servicePrices", serviceType],
+    queryFn: () => getServicesPrices(serviceType),
+    enabled: !!serviceType,
   });
+
+  const {
+    data: extraServices,
+    isLoading: isExtraServicesLoading,
+    isRefetching: isExtraServicesRefetching,
+  } = useQuery({
+    queryKey: [],
+    queryFn: () => getExtraServices(serviceType),
+    enabled: !!serviceType,
+  });
+
+  useEffect(() => {
+    if (isCategoriesSuccess && categories) {
+      form.setFieldValue("serviceCategory", categories[0].id);
+    }
+  }, [isCategoriesSuccess, categories, form]);
 
   useEffect(() => {
     //set first service type as default value
@@ -139,7 +156,68 @@ export const BookingForm = ({ submitButtonRef }) => {
         autoComplete="off"
         layout="vertical"
         scrollToFirstError={true}
+        clearOnDestroy={true}
       >
+        <div className="flex gap-4">
+          <div className="lg:w-1/2 md:w-1/2 sm:w-full">
+            <Form.Item
+              label="First Name"
+              name="firstName"
+              rules={[
+                { required: true, message: "Please enter your first name" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </div>
+          <div className="lg:w-1/2 md:w-1/2 sm:w-full">
+            <Form.Item
+              label="Last Name"
+              name="lastName"
+              rules={[
+                { required: true, message: "Please enter your last name" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </div>
+        </div>
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Please enter your email" },
+            () => ({
+              validator(_, value) {
+                if (isValidEmail(value)) {
+                  return Promise.resolve();
+                } else {
+                  return Promise.reject(new Error("Invalid email"));
+                }
+              },
+            }),
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="Phone"
+          name="phone"
+          rules={[
+            { required: true, message: "Please enter your phone number" },
+            () => ({
+              validator(_, value) {
+                if (isValidPhoneNumber(value)) {
+                  return Promise.resolve();
+                } else {
+                  return Promise.reject(new Error("Invalid phone number"));
+                }
+              },
+            }),
+          ]}
+        >
+          <Input />
+        </Form.Item>
         <Form.Item
           label="Address"
           name="address"
@@ -168,26 +246,33 @@ export const BookingForm = ({ submitButtonRef }) => {
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          label="Phone"
-          name="phone"
-          rules={[
-            { required: true, message: "Please enter your phone number" },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Date and Time"
-          name="date-time"
-          rules={[{ required: true, message: "Please select date and time" }]}
-        >
-          <DatePicker
-            showTime={{ format: "HH" }}
-            minDate={dayjs()}
-            minTime={"02"}
-          />
-        </Form.Item>
+        <div className="flex">
+          <div className="w-1/2">
+            <Form.Item
+              label="Date"
+              name="date"
+              rules={[{ required: true, message: "Please select date" }]}
+            >
+              <DatePicker minDate={dayjs().add(1, "day")} />
+            </Form.Item>
+          </div>
+          <div className="w-1/2">
+            <Form.Item
+              label="Time"
+              name="time"
+              rules={[{ required: true, message: "Please select time" }]}
+            >
+              <TimePicker
+                format="HH:mm"
+                disabledHours={() => disabledHours}
+                minuteStep={30}
+                hideDisabledOptions
+                needConfirm={false}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
         <div className="flex w-full gap-4">
           <div className="w-1/2">
             <Form.Item
@@ -251,26 +336,11 @@ export const BookingForm = ({ submitButtonRef }) => {
           </Form.Item>
         )}
 
-        {/*{serviceCategory === SERVICE_CATEGORIES.GENERAL_HOUSE_CLEAN && (*/}
-        {/*  <HouseCleanCheckBoxes*/}
-        {/*    serviceType={serviceType}*/}
-        {/*    blindsClean={blindsClean}*/}
-        {/*    changeBedSheets={changeBedSheets}*/}
-        {/*  />*/}
-        {/*)}*/}
-        {/*{serviceCategory === SERVICE_CATEGORIES.END_OF_LEASE_CLEAN && (*/}
-        {/*  <EndOfLeaseCheckBoxes*/}
-        {/*    steamCleanBedrooms={steamCleanBedrooms}*/}
-        {/*    steamCleanLivingrooms={steamCleanLivingrooms}*/}
-        {/*    steamCleanHallways={steamCleanHallways}*/}
-        {/*    steamCleanStairs={steamCleanStairs}*/}
-        {/*    steamCleanSingleSeatSofa={steamCleanSingleSeatSofa}*/}
-        {/*    steamCleanMultiSeatSofa={steamCleanMultiSeatSofa}*/}
-        {/*    wallScrubAndClean={wallScrubAndClean}*/}
-        {/*    blindsClean={blindsClean}*/}
-        {/*    serviceType={serviceType}*/}
-        {/*  />*/}
-        {/*)}*/}
+        {(!isExtraServicesLoading ||
+          !isServiceTypesLoading ||
+          !isExtraServicesRefetching) && (
+          <ExtraServices extraServices={extraServices} />
+        )}
 
         <Form.Item
           label="Tip"

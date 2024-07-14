@@ -3,8 +3,8 @@ import type { NamePath } from "rc-field-form/es/interface";
 import { className } from "postcss-selector-parser";
 
 interface Props {
-  checkBoxName: NamePath<any>;
-  inputName: NamePath<any>;
+  checkBoxName: string;
+  inputName: string;
   title: string | undefined;
   disableInput: boolean | undefined;
   className?: string;
@@ -20,10 +20,15 @@ export const InputWithCheckBox = ({
   return (
     <div className={className}>
       <Space direction="horizontal">
-        <Form.Item name={checkBoxName} valuePropName="checked" className="mb-0">
+        <Form.Item
+          name={checkBoxName}
+          valuePropName="checked"
+          className="mb-0"
+          preserve={false}
+        >
           <Checkbox />
         </Form.Item>
-        <Form.Item name={inputName} className="mb-0">
+        <Form.Item name={inputName} preserve={false} className="mb-0">
           <InputNumber disabled={disableInput} />
         </Form.Item>
         {title}
