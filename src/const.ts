@@ -156,3 +156,35 @@ export const END_OF_LEASE_CLEAN_PRICES = {
 };
 
 export const storeysEnabledServiceTypes = [2, 3, 5];
+
+export const extraServicesFields = [
+  "insideCupboards",
+  "insideEmptyFridge",
+  "insideFullFridge",
+  "ovenClean",
+  "insideWindows",
+  "petHairRemoval",
+  "balconyClean",
+  "changeBedSheets",
+  "ecoFriendlyClean",
+  "garageClean",
+  "verandahClean",
+  "dishwasherClean",
+  "blindsClean",
+  "microwaveClean",
+  "steamCleanBedrooms",
+  "steamCleanLivingrooms",
+  "steamCleanHallways",
+  "steamCleanStairs",
+  "wallScrubAndClean",
+  "exteriorWindows",
+  "furnitureClean",
+  "deepClean",
+  "changeBedSheetsQuantity",
+  "blindsCleanQuantity",
+  "steamCleanBedroomsQuantity",
+  "steamCleanLivingroomsQuantity",
+  "steamCleanHallwaysQuantity",
+  "steamCleanStairsQuantity",
+  "wallScrubAndCleanQuantity",
+];

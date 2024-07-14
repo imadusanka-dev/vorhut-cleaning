@@ -1,6 +1,4 @@
 import { Checkbox, Form, InputNumber, Space } from "antd";
-import type { NamePath } from "rc-field-form/es/interface";
-import { className } from "postcss-selector-parser";
 
 interface Props {
   checkBoxName: string;

@@ -1,2 +1,3 @@
 export * from "./InputWithCheckBox";
-export * from "./PlacesAutoComplete";
+export * from "./CheckBoxContainer";
+export * from "./InputWithCheckBoxContainer";

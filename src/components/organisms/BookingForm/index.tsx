@@ -1,5 +1,6 @@
 "use client";
 
+import { useStore } from "@/store";
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import {
@@ -10,6 +11,7 @@ import {
   bedRoomOptions,
   bathRoomOptions,
   powderRoomOptions,
+  extraServicesFields,
   storeysEnabledServiceTypes,
 } from "@/const";
 import {
@@ -40,6 +42,7 @@ const disabledHours = [0, 1, 2, 3, 4, 5, 6, 7, 18, 19, 20, 21, 22, 23];
 
 export const BookingForm = ({ submitButtonRef }) => {
   const [form] = Form.useForm();
+  const resetExtraServices = useStore((state) => state.resetExtraServices);
 
   const serviceType = Form.useWatch("serviceType", form);
   const serviceCategory = Form.useWatch("serviceCategory", form);
@@ -50,22 +53,7 @@ export const BookingForm = ({ submitButtonRef }) => {
   const noOfBathrooms = Form.useWatch("bathrooms", form);
   const noOfPowderRooms = Form.useWatch("powderRooms", form);
 
-  //extras
-  const blindsClean = Form.useWatch("blindsClean", form);
-  const changeBedSheets = Form.useWatch("changeBedSheets", form);
-  const steamCleanBedrooms = Form.useWatch("steamCleanBedrooms", form);
-  const steamCleanLivingrooms = Form.useWatch("steamCleanLivingrooms", form);
-  const steamCleanHallways = Form.useWatch("steamCleanHallways", form);
-  const steamCleanStairs = Form.useWatch("steamCleanStairs", form);
-  const steamCleanSingleSeatSofa = Form.useWatch(
-    "steamCleanSingleSeatSofa",
-    form,
-  );
-  const steamCleanMultiSeatSofa = Form.useWatch(
-    "steamCleanMultiSeatSofa",
-    form,
-  );
-  const wallScrubAndClean = Form.useWatch("wallScrubAndClean", form);
+  const tip = Form.useWatch("tip", form);
 
   const {
     data: categories,
@@ -97,7 +85,7 @@ export const BookingForm = ({ submitButtonRef }) => {
     isLoading: isExtraServicesLoading,
     isRefetching: isExtraServicesRefetching,
   } = useQuery({
-    queryKey: [],
+    queryKey: ["extraServices", serviceType],
     queryFn: () => getExtraServices(serviceType),
     enabled: !!serviceType,
   });
@@ -126,6 +114,10 @@ export const BookingForm = ({ submitButtonRef }) => {
         form.setFieldValue("storeys", storeysOptions[0].value);
       }
     }
+
+    //reset extra services
+    form.resetFields(extraServicesFields);
+    resetExtraServices();
   }, [serviceType, form]);
 
   usePriceManager({
@@ -136,6 +128,7 @@ export const BookingForm = ({ submitButtonRef }) => {
     noOfPowderRooms,
     noOfStoreys,
     prices,
+    tip,
   });
 
   const onFinish = (values) => {
@@ -336,11 +329,7 @@ export const BookingForm = ({ submitButtonRef }) => {
           </Form.Item>
         )}
 
-        {(!isExtraServicesLoading ||
-          !isServiceTypesLoading ||
-          !isExtraServicesRefetching) && (
-          <ExtraServices extraServices={extraServices} />
-        )}
+        <ExtraServices extraServices={extraServices} />
 
         <Form.Item
           label="Tip"
