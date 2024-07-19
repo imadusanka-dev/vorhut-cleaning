@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import type { PriceSlice } from "@/types";
-import { ExtraService } from "@/types";
 
 export const createPriceSlice: StateCreator<PriceSlice> = (set) => ({
   priceSummary: {
@@ -14,6 +13,7 @@ export const createPriceSlice: StateCreator<PriceSlice> = (set) => ({
     total: 0,
   },
   extraServices: [],
+  promoCode: null,
   setPriceSummary: (priceSummary) => set({ priceSummary }),
   setExtraServices: (newItem) =>
     set(({ extraServices }) => {
@@ -33,4 +33,5 @@ export const createPriceSlice: StateCreator<PriceSlice> = (set) => ({
       ),
     })),
   resetExtraServices: () => set({ extraServices: [] }),
+  setPromoCode: (promoCode) => set({ promoCode }),
 });

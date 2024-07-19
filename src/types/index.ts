@@ -1,3 +1,5 @@
+import { PromoCode } from "@/schemas";
+
 export interface IOptions {
   value: string | number;
   label: string;
@@ -17,6 +19,7 @@ export interface ServiceType {
 export interface ExtraService {
   id: number;
   price: number;
+  title: string;
   quantity?: number;
 }
 
@@ -34,8 +37,10 @@ export interface PriceSummary {
 export interface PriceSlice {
   priceSummary: PriceSummary;
   extraServices: ExtraService[];
+  promoCode: PromoCode | null;
   setPriceSummary: (priceSummary: PriceSummary) => void;
   setExtraServices: (extraService: ExtraService) => void;
   removeExtraService: (id: number) => void;
   resetExtraServices: () => void;
+  setPromoCode: (promoCode: PromoCode) => void;
 }

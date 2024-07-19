@@ -1,2 +1,3 @@
 export * from "./categories";
-export * from "./service-types";
+export * from "./serviceTypes";
+export * from "./promoCodes";

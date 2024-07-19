@@ -36,16 +36,18 @@ export const InputWithCheckBoxContainer = ({
       setExtraServices({
         id,
         price,
+        title,
         quantity,
       });
     } else {
       removeExtraService(id);
     }
   }, [
-    quantity,
-    checkBoxValue,
     id,
     price,
+    title,
+    quantity,
+    checkBoxValue,
     setExtraServices,
     removeExtraService,
   ]);

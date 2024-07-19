@@ -25,6 +25,7 @@ export const CheckBoxContainer = ({
       setExtraServices({
         id,
         price,
+        title,
       });
     } else {
       removeExtraService(id);

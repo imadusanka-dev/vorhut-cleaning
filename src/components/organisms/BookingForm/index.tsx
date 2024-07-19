@@ -26,17 +26,17 @@ import {
   Space,
 } from "antd";
 import { ExtraServices } from "@/components";
-import { usePriceManager } from "@/hooks";
-import { useQuery } from "@tanstack/react-query";
 import {
-  getCategories,
-  getServiceTypes,
-  getExtraServices,
-  getServicesPrices,
-} from "@/api/services";
+  usePriceManager,
+  useCategories,
+  useServiceTypes,
+  useServicePrices,
+  useExtraServices,
+} from "@/hooks";
 import { isValidEmail } from "@/utils/isValidEmail";
 import { isValidPhoneNumber } from "@/utils/isValidPhoneNumber";
 import { formatSelectOptionArray } from "@/utils/formatSelectOptions";
+import { instance } from "@/api";
 
 const disabledHours = [0, 1, 2, 3, 4, 5, 6, 7, 18, 19, 20, 21, 22, 23];
 
@@ -55,40 +55,16 @@ export const BookingForm = ({ submitButtonRef }) => {
 
   const tip = Form.useWatch("tip", form);
 
-  const {
-    data: categories,
-    isLoading: isCategoriesLoading,
-    isSuccess: isCategoriesSuccess,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-  });
+  const { data: categories, isSuccess: isCategoriesSuccess } = useCategories();
 
-  const {
-    data: serviceTypes,
-    isLoading: isServiceTypesLoading,
-    isSuccess: isServiceTypesSuccess,
-  } = useQuery({
-    queryKey: ["serviceTypes", serviceCategory],
-    queryFn: () => getServiceTypes(serviceCategory),
-    enabled: !!serviceCategory,
-  });
+  const { data: serviceTypes, isSuccess: isServiceTypesSuccess } =
+    useServiceTypes(serviceCategory);
 
-  const { data: prices } = useQuery({
-    queryKey: ["servicePrices", serviceType],
-    queryFn: () => getServicesPrices(serviceType),
-    enabled: !!serviceType,
-  });
+  const { data: prices } = useServicePrices(serviceType);
 
-  const {
-    data: extraServices,
-    isLoading: isExtraServicesLoading,
-    isRefetching: isExtraServicesRefetching,
-  } = useQuery({
-    queryKey: ["extraServices", serviceType],
-    queryFn: () => getExtraServices(serviceType),
-    enabled: !!serviceType,
-  });
+  const { data: extraServices } = useExtraServices(serviceType);
+
+  const selectedExtraServices = useStore((state) => state.extraServices);
 
   useEffect(() => {
     if (isCategoriesSuccess && categories) {
@@ -131,8 +107,37 @@ export const BookingForm = ({ submitButtonRef }) => {
     tip,
   });
 
-  const onFinish = (values) => {
-    console.log("Success:", values);
+  const onFinish = async (values) => {
+    try {
+      const payload = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        telephone: values.phone,
+        address: values.address,
+        city: values.city,
+        state: values.state,
+        zipCode: values.zipCode,
+        date: dayjs(values.date).toDate().toUTCString(),
+        serviceCategory: values.serviceCategory,
+        serviceType: values.serviceType,
+        noOfBedrooms: values.bedrooms,
+        noOfBathrooms: values.bathrooms,
+        noOfPowderRooms: values.powderRooms,
+        noOfStoreys: values.storeys,
+        tip: values.tip,
+        isParkingAvailable: values.parkingAvailable,
+        getInsideHome: values.getHome,
+        flexibility: values.flexibility,
+        notes: values.notes,
+        heardFrom: values.heardFrom,
+        extraServices: selectedExtraServices,
+      };
+
+      await instance.post("/orders", payload);
+    } catch (err) {
+      console.log("error", err);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -230,41 +235,30 @@ export const BookingForm = ({ submitButtonRef }) => {
           name="state"
           rules={[{ required: true, message: "Please select your state" }]}
         >
-          <Select options={[{ value: "victoria", label: "Victoria" }]} />
+          <Select options={[{ value: "Victoria", label: "Victoria" }]} />
         </Form.Item>
         <Form.Item
           label="Zip Code"
-          name="zipcode"
+          name="zipCode"
           rules={[{ required: true, message: "Please enter your zip code" }]}
         >
           <Input />
         </Form.Item>
-        <div className="flex">
-          <div className="w-1/2">
-            <Form.Item
-              label="Date"
-              name="date"
-              rules={[{ required: true, message: "Please select date" }]}
-            >
-              <DatePicker minDate={dayjs().add(1, "day")} />
-            </Form.Item>
-          </div>
-          <div className="w-1/2">
-            <Form.Item
-              label="Time"
-              name="time"
-              rules={[{ required: true, message: "Please select time" }]}
-            >
-              <TimePicker
-                format="HH:mm"
-                disabledHours={() => disabledHours}
-                minuteStep={30}
-                hideDisabledOptions
-                needConfirm={false}
-              />
-            </Form.Item>
-          </div>
-        </div>
+        <Form.Item
+          label="Date and Time"
+          name="date"
+          rules={[{ required: true, message: "Please select date and time" }]}
+        >
+          <DatePicker
+            showTime
+            format="YYYY-MM-DD HH:mm"
+            minDate={dayjs().add(2, "day")}
+            disabledHours={() => disabledHours}
+            minuteStep={30}
+            hideDisabledOptions
+            needConfirm={false}
+          />
+        </Form.Item>
 
         <div className="flex w-full gap-4">
           <div className="w-1/2">
@@ -331,12 +325,7 @@ export const BookingForm = ({ submitButtonRef }) => {
 
         <ExtraServices extraServices={extraServices} />
 
-        <Form.Item
-          label="Tip"
-          name="tip"
-          className="w-full"
-          rules={[{ min: 0, message: "Minimum amount must be 0" }]}
-        >
+        <Form.Item label="Tip" name="tip" className="w-full">
           <InputNumber prefix="AUD" min={0} className="w-full" />
         </Form.Item>
         <Form.Item
@@ -376,7 +365,7 @@ export const BookingForm = ({ submitButtonRef }) => {
         <Form.Item label="Special Notes" name="notes" className="w-full">
           <Input.TextArea rows={5} />
         </Form.Item>
-        <Form.Item label="How did you hear about us?" name="heard_from">
+        <Form.Item label="How did you hear about us?" name="heardFrom">
           <Select options={hearOptions} />
         </Form.Item>
         <Form.Item>
