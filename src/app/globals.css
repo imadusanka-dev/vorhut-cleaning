@@ -5,3 +5,12 @@
 .ant-picker-footer {
     display: none !important;
 }
+
+#submit {
+    color: #ffff;
+    background-color: #4096FF;
+    padding: 8px 10px;
+    margin-top: 10px;
+    border: 1px solid #4096FF;
+    border-radius: 5px;
+}

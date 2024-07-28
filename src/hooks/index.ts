@@ -6,4 +6,4 @@ export * from "./useServiceTypes";
 export * from "./useServiceTypes";
 export * from "./useServicePrices";
 export * from "./useExtraServices";
-export * from "./useMessage";
+export * from "./useBookings";

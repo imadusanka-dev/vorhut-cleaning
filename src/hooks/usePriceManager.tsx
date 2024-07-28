@@ -14,6 +14,7 @@ interface Props {
   noOfPowderRooms: number | undefined;
   noOfStoreys: string | undefined;
   prices: ServicesPrices | undefined;
+  isFreeParkingAvailable: boolean | undefined;
   tip: number | undefined;
 }
 
@@ -26,6 +27,7 @@ export const usePriceManager = ({
   noOfStoreys,
   prices,
   tip = 0,
+  isFreeParkingAvailable,
 }: Props) => {
   const setPriceSummary = useStore((state) => state.setPriceSummary);
   const promoCode = useStore((state) => state.promoCode);
@@ -50,13 +52,16 @@ export const usePriceManager = ({
       }
 
       if (promoCode.type === PROMO_CODE_TYPES.PERCENTAGE) {
-        discount = (servicePrice + extraPrice) * promoCode.discount * 0.01;
+        discount = Number(
+          ((servicePrice + extraPrice) * promoCode.discount * 0.01).toFixed(2),
+        );
       }
     }
     const amountBeforeTax = servicePrice + extraPrice - discount;
-    const tax = Number((amountBeforeTax * 0.1).toFixed(1));
+    const tax = Number((amountBeforeTax * 0.1).toFixed(2));
     const finalAmount = amountBeforeTax + tax;
-    const total = finalAmount + tip;
+    const parkingFee = isFreeParkingAvailable ? 0 : 10;
+    const total = finalAmount + parkingFee + tip;
 
     setPriceSummary({
       servicePrice,
@@ -64,9 +69,10 @@ export const usePriceManager = ({
       discount,
       amountBeforeTax,
       tax,
+      parkingFee,
       finalAmount,
       tip: tip ?? 0,
       total,
     });
-  }, [servicePrice, extraPrice, tip, promoCode]);
+  }, [servicePrice, extraPrice, tip, promoCode, isFreeParkingAvailable]);
 };

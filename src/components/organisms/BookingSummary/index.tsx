@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/store";
-import { Button, Input, message } from "antd";
+import { Button, Input, message, Typography } from "antd";
 import { useCallback, useState } from "react";
 import { getPromoCodeByCode } from "@/api/services";
 
@@ -20,6 +20,7 @@ export const BookingSummary = ({ submitButtonRef }) => {
       setError(false);
       setPromoCode(response);
       setInputDisable(true);
+      message.success("Coupon Code Applied");
     } catch (error) {
       if (error.response.status === 404) {
         setError(true);
@@ -62,6 +63,10 @@ export const BookingSummary = ({ submitButtonRef }) => {
         <div className="flex justify-between mb-2">
           <span className="text-sm">Final Amount</span>
           <span className="text-sm">AUD {priceSummary.finalAmount}</span>
+        </div>
+        <div className="flex justify-between mb-2">
+          <span className="text-sm">Parking Fee</span>
+          <span className="text-sm">AUD {priceSummary.parkingFee}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-sm">Tip</span>

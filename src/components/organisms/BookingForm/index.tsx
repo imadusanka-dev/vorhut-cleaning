@@ -20,12 +20,11 @@ import {
   Button,
   Select,
   DatePicker,
-  TimePicker,
   InputNumber,
   Radio,
   Space,
+  message,
 } from "antd";
-import { ExtraServices } from "@/components";
 import {
   usePriceManager,
   useCategories,
@@ -33,16 +32,21 @@ import {
   useServicePrices,
   useExtraServices,
 } from "@/hooks";
+import { instance } from "@/api";
+import { useRouter } from "next/navigation";
+import { ExtraServices } from "@/components";
 import { isValidEmail } from "@/utils/isValidEmail";
 import { isValidPhoneNumber } from "@/utils/isValidPhoneNumber";
 import { formatSelectOptionArray } from "@/utils/formatSelectOptions";
-import { instance } from "@/api";
 
-const disabledHours = [0, 1, 2, 3, 4, 5, 6, 7, 18, 19, 20, 21, 22, 23];
+const disabledHours = [0, 1, 2, 3, 4, 5, 6, 19, 20, 21, 22, 23];
 
 export const BookingForm = ({ submitButtonRef }) => {
+  const router = useRouter();
+
   const [form] = Form.useForm();
   const resetExtraServices = useStore((state) => state.resetExtraServices);
+  const promoCode = useStore((state) => state.promoCode);
 
   const serviceType = Form.useWatch("serviceType", form);
   const serviceCategory = Form.useWatch("serviceCategory", form);
@@ -54,6 +58,7 @@ export const BookingForm = ({ submitButtonRef }) => {
   const noOfPowderRooms = Form.useWatch("powderRooms", form);
 
   const tip = Form.useWatch("tip", form);
+  const isFreeParkingAvailable = Form.useWatch("parkingAvailable", form);
 
   const { data: categories, isSuccess: isCategoriesSuccess } = useCategories();
 
@@ -104,6 +109,7 @@ export const BookingForm = ({ submitButtonRef }) => {
     noOfPowderRooms,
     noOfStoreys,
     prices,
+    isFreeParkingAvailable,
     tip,
   });
 
@@ -125,18 +131,20 @@ export const BookingForm = ({ submitButtonRef }) => {
         noOfBathrooms: values.bathrooms,
         noOfPowderRooms: values.powderRooms,
         noOfStoreys: values.storeys,
-        tip: values.tip,
+        tip: values.tip ?? 0,
         isParkingAvailable: values.parkingAvailable,
         getInsideHome: values.getHome,
         flexibility: values.flexibility,
         notes: values.notes,
         heardFrom: values.heardFrom,
+        promoCodeId: promoCode?.id,
         extraServices: selectedExtraServices,
       };
 
-      await instance.post("/orders", payload);
+      const response = await instance.post("/orders", payload);
+      router.push(`/checkout?clientSecret=${response.data.clientSecret}`);
     } catch (err) {
-      console.log("error", err);
+      message.error("Something went wrong");
     }
   };
 
@@ -157,7 +165,7 @@ export const BookingForm = ({ submitButtonRef }) => {
         clearOnDestroy={true}
       >
         <div className="flex gap-4">
-          <div className="lg:w-1/2 md:w-1/2 sm:w-full">
+          <div className="lg:w-1/2 md:w-full">
             <Form.Item
               label="First Name"
               name="firstName"
@@ -168,7 +176,7 @@ export const BookingForm = ({ submitButtonRef }) => {
               <Input />
             </Form.Item>
           </div>
-          <div className="lg:w-1/2 md:w-1/2 sm:w-full">
+          <div className="lg:w-1/2 md:w-full">
             <Form.Item
               label="Last Name"
               name="lastName"
@@ -252,11 +260,12 @@ export const BookingForm = ({ submitButtonRef }) => {
           <DatePicker
             showTime
             format="YYYY-MM-DD HH:mm"
-            minDate={dayjs().add(2, "day")}
+            minDate={dayjs().add(1, "day")}
             disabledHours={() => disabledHours}
             minuteStep={30}
             hideDisabledOptions
             needConfirm={false}
+            placement="bottomLeft"
           />
         </Form.Item>
 
@@ -329,7 +338,7 @@ export const BookingForm = ({ submitButtonRef }) => {
           <InputNumber prefix="AUD" min={0} className="w-full" />
         </Form.Item>
         <Form.Item
-          label="Is easily accessible free parking available?"
+          label="Is easily accessible free parking available? (If free parking not available, additional 10 AUD will be charged)"
           name="parkingAvailable"
           rules={[{ required: true, message: "This field is required" }]}
         >

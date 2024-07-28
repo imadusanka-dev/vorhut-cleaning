@@ -4,3 +4,6 @@ export * from "./BookingForm";
 export * from "./BookingSummary";
 export * from "./ExtraServices";
 export * from "./PublicHeader";
+export * from "./StripeCheckoutForm";
+export * from "./StripeContainer";
+export * from "./ViewBooking";

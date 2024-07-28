@@ -30,6 +30,7 @@ export interface PriceSummary {
   amountBeforeTax: number;
   tax: number;
   finalAmount: number;
+  parkingFee: number;
   tip: number;
   total: number;
 }

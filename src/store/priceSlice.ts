@@ -9,6 +9,7 @@ export const createPriceSlice: StateCreator<PriceSlice> = (set) => ({
     amountBeforeTax: 0,
     tax: 0,
     finalAmount: 0,
+    parkingFee: 0,
     tip: 0,
     total: 0,
   },
